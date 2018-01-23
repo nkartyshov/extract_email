@@ -5,7 +5,7 @@
     android:layout_height="match_parent">
 
     <TextView
-        android:id="@+id/my_email"
+        android:id="@+id/my_result"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:text="Hello World!"

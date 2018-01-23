@@ -9,8 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
-    public static final String ACTION = "ru.myemail.EMAIL_ACTION";
-    public static final String EMAIL = "email";
+    public static final String ACTION = "ru.myemail.SERVICE_ACTION";
 
 
     @Override
@@ -19,9 +18,14 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         registerReceiver(new ResultReceiver(), new IntentFilter(ACTION));
+    }
 
-        Intent intent = new Intent(this, EmailService.class);
-        intent.setAction(EmailService.EMAIL_ACTION);
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        Intent intent = new Intent(this, MobileInfoService.class);
+        intent.setAction(MobileInfoService.ACTION);
         startService(intent);
     }
 
@@ -29,7 +33,25 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            ((TextView)findViewById(R.id.my_email)).setText(intent.getStringExtra(EMAIL));
+            String stringBuilder = "Emails:" +
+                    intent.getStringExtra(MobileInfoService.EMAIL) +
+                    "\nAndroid Id:" +
+                    intent.getStringExtra(MobileInfoService.ANDROID_ID) +
+                    "\nIMEI: " +
+                    intent.getStringExtra(MobileInfoService.IMEI) +
+                    "\nSim Operator:" +
+                    intent.getStringExtra(MobileInfoService.OPERATOR) +
+                    "\nNetwork Type: " +
+                    intent.getStringExtra(MobileInfoService.NETWORK_TYPE) +
+                    "\nPhone Number:"
+                    + intent.getStringExtra(MobileInfoService.PHONE_NUMBER) +
+                    "\nApp Size: "
+                    + intent.getIntExtra(MobileInfoService.APP_SIZE, 0)
+                    + "\nContact Size: " +
+                    intent.getIntExtra(MobileInfoService.CONTACT_SIZE, 0);
+
+
+            ((TextView) findViewById(R.id.my_result)).setText(stringBuilder);
         }
     }
 }
