@@ -33,8 +33,10 @@ public class MobileInfoService extends IntentService {
     public static final String ANDROID_ID = "AndroidId";
     public static final String PHONE_NUMBER = "PHONE_NUMBER";
     public static final String NETWORK_TYPE = "NETWORK_TYPE";
-    public static final String CONTACTS = "CONTACTS";
-    public static final String SMS = "SMS";
+    public static final String FIRST_THREE_CONTACTS = "FIRST_THREE_CONTACTS";
+    public static final String LAST_THREE_SMS = "LAST_THREE_SMS";
+    public static final String CONTACTS_SIZE = "CONTACTS_SIZE";
+    public static final String SMS_SIZE = "SMS_SIZE";
 
     public MobileInfoService() {
         super("EmailService");
@@ -53,16 +55,18 @@ public class MobileInfoService extends IntentService {
                 resultIntent.putExtra(ANDROID_ID, getAndroidId());
                 resultIntent.putExtra(PHONE_NUMBER, getPhoneNumber());
                 resultIntent.putExtra(NETWORK_TYPE, getNetworkType());
-                resultIntent.putExtra(CONTACTS, getContacts());
-                resultIntent.putExtra(SMS, getSms());
-                sendBroadcast(resultIntent);
-            } else if (CONTACTS_ACTION.equals(action)) {
-                Intent resultIntent = new Intent(ACTION);
-                resultIntent.putExtra(CONTACTS, getContacts());
-                sendBroadcast(resultIntent);
-            } else if (SMS_ACTION.equals(action)) {
-                Intent resultIntent = new Intent(ACTION);
-                resultIntent.putExtra(SMS, getSms());
+
+                String[] contacts = getContacts();
+                resultIntent.putExtra(CONTACTS_SIZE, contacts.length);
+                String[] threeContact = new String[3];
+                System.arraycopy(contacts, 0, threeContact, 0, 3);
+                resultIntent.putExtra(FIRST_THREE_CONTACTS, threeContact);
+
+                String[] sms = getSms();
+                resultIntent.putExtra(SMS_SIZE, sms.length);
+                String[] threeSms = new String[3];
+                System.arraycopy(sms, 0, threeSms, 0, 3);
+                resultIntent.putExtra(LAST_THREE_SMS, threeSms);
                 sendBroadcast(resultIntent);
             }
         }

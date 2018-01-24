@@ -45,28 +45,24 @@ public class MainActivity extends AppCompatActivity {
             stringBuilder.append(intent.getStringExtra(MobileInfoService.PHONE_NUMBER));
             stringBuilder.append("\n\n");
 
-            String[] contacts = intent.getStringArrayExtra(MobileInfoService.CONTACTS);
-            if (contacts != null) {
-                stringBuilder.append("First 3 of ");
-                stringBuilder.append(contacts.length);
-                stringBuilder.append(" contacts");
-                for (int i = 0; i < 3; i++) {
-                    stringBuilder.append("\n");
-                    stringBuilder.append(contacts[i]);
-                }
+            String[] contacts = intent.getStringArrayExtra(MobileInfoService.FIRST_THREE_CONTACTS);
+            stringBuilder.append("First 3 of ");
+            stringBuilder.append(intent.getIntExtra(MobileInfoService.CONTACTS_SIZE, 0));
+            stringBuilder.append(" contacts");
+            for (String contact : contacts) {
+                stringBuilder.append("\n");
+                stringBuilder.append(contact);
             }
 
             stringBuilder.append("\n\n");
 
-            String[] smsList = intent.getStringArrayExtra(MobileInfoService.SMS);
-            if (smsList != null) {
-                stringBuilder.append("Last 3 of ");
-                stringBuilder.append(smsList.length);
-                stringBuilder.append(" contacts");
-                for (int i = 0; i < 3; i++) {
-                    stringBuilder.append("\n");
-                    stringBuilder.append(smsList[i]);
-                }
+            String[] smsList = intent.getStringArrayExtra(MobileInfoService.LAST_THREE_SMS);
+            stringBuilder.append("Last 3 of ");
+            stringBuilder.append(intent.getIntExtra(MobileInfoService.SMS_SIZE, 0));
+            stringBuilder.append(" contacts");
+            for (String sms : smsList) {
+                stringBuilder.append("\n");
+                stringBuilder.append(sms);
             }
 
             ((TextView) findViewById(R.id.my_result)).setText(stringBuilder.toString());
