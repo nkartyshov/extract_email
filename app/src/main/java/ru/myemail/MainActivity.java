@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
 
             String[] smsList = intent.getStringArrayExtra(MobileInfoService.SMS);
             if (smsList != null) {
-                stringBuilder.append("First 3 of ");
+                stringBuilder.append("Last 3 of ");
                 stringBuilder.append(smsList.length);
                 stringBuilder.append(" contacts");
                 for (int i = 0; i < 3; i++) {
